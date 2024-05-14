@@ -290,7 +290,7 @@ class FastMistralModel(FastLlamaModel):
     @staticmethod
     def from_pretrained(
         model_name     = "unsloth/mistral-7b-bnb-4bit",
-        max_seq_length = 4096,
+        max_seq_length = None,
         dtype          = None,
         load_in_4bit   = True,
         token          = None,
@@ -340,10 +340,15 @@ class FastMistralModel(FastLlamaModel):
         model_config = AutoConfig.from_pretrained(model_name, token = token)
         model_max_seq_length = model_config.max_position_embeddings
 
+        # If max_seq_length is not specified, use maximum fron config
+        if max_seq_length is None:
+            max_seq_length = model_max_seq_length
+        pass
+
         # Mistral does NOT support RoPE Scaling sadly so we have to error out.
         if max_seq_length > model_max_seq_length:
             raise RuntimeError(
-                "Unsloth: Unfortunately Mistral type models do not support RoPE scaling!\n"\
+                f"Unsloth: Unfortunately {model_patcher.__name__[4:-5]} type models do not support RoPE scaling!\n"\
                 f"The maximum sequence length supported is {model_max_seq_length}.",
             )
         pass

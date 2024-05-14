@@ -1005,7 +1005,7 @@ class FastLlamaModel:
     @staticmethod
     def from_pretrained(
         model_name     = "unsloth/llama-2-7b-bnb-4bit",
-        max_seq_length = 4096,
+        max_seq_length = None,
         dtype          = None,
         load_in_4bit   = True,
         token          = None,
@@ -1049,6 +1049,11 @@ class FastLlamaModel:
         # RoPE scaling
         model_max_seq_length = \
             AutoConfig.from_pretrained(model_name, token = token).max_position_embeddings
+
+        # If max_seq_length is not specified, use maximum fron config
+        if max_seq_length is None:
+            max_seq_length = model_max_seq_length
+        pass
 
         if (rope_scaling is None) and (max_seq_length > model_max_seq_length):
             rope_scaling = max_seq_length / model_max_seq_length
@@ -1605,6 +1610,7 @@ class FastLlamaModel:
 
         if   model_type == "llama":   apply_lora_mlp = apply_lora_mlp_swiglu
         elif model_type == "mistral": apply_lora_mlp = apply_lora_mlp_swiglu
+        elif model_type == "qwen2":   apply_lora_mlp = apply_lora_mlp_swiglu
         elif model_type == "gemma":   apply_lora_mlp = apply_lora_mlp_geglu_approx
         else:
             raise NotImplementedError(f"Unsloth: {model_type} is not yet implemented!")

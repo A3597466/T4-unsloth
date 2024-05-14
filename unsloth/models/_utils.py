@@ -30,7 +30,7 @@ import numpy as np
 import os
 import psutil
 
-__version__ = "2024.4"
+__version__ = "2024.5"
 
 # Get Flash Attention v2 if Ampere (RTX 30xx, A100)
 major_version, minor_version = torch.cuda.get_device_capability()
@@ -180,12 +180,14 @@ def patch_tokenizer(model, tokenizer):
             # Try unk_token
             possible_pad_token = tokenizer.unk_token
         pass
+
         if possible_pad_token is None:
-            # Failure!!
-            raise RuntimeError(
-                "Unsloth: Tokenizer's pad_token cannot be = eos_token, and we couldn't find a\n"\
-                "replacement of either <|reserved... or <|placeholder..."
-            )
+            # Failure to find a good replacement!! We shall manually add one!
+            new_pad_token = "<|PAD_TOKEN|>"
+            while new_pad_token in tokenizer.get_vocab():
+                new_pad_token += "#"
+            pass
+            possible_pad_token = new_pad_token
         pass
 
         name = model.config._name_or_path if model is not None else "Model"
